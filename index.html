@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A technical reflection on rebuilding an insecure student organization platform using secure design principles and the Philippine Data Privacy Act.">
+  <title>Shipping Fast Without Sacrificing Privacy</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="index.html">Secure by Design</a>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <a href="index.html">Technical Blog</a>
+        <a href="profile.html">My Profile</a>
+        <a href="#references">References</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-inner">
+        <p class="kicker">TECHNICAL BLOG · SECURE DESIGN PRINCIPLES</p>
+        <h1>Shipping Fast Without Sacrificing Privacy</h1>
+        <p class="subtitle">A secure-design reflection on an AI-assisted student organization platform</p>
+        <div class="byline">
+          <span>By John Ryan Wong Paler</span>
+          <span>July 30, 2026</span>
+          <span>2,123 words</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="container page-grid">
+      <aside class="toc">
+        <p class="toc-title">IN THIS ARTICLE</p>
+        <a href="#section-1">When a Prototype Becomes a Responsibility</a>
+<a href="#section-2">Where the Design Failed</a>
+<a href="#section-3">The First Hours: Contain Before Rebuilding</a>
+<a href="#section-4">The First Days: Repair the Dangerous Paths</a>
+<a href="#section-5">Long-Term Design: Make Security the Normal Path</a>
+<a href="#section-6">Using AI Without Outsourcing Responsibility</a>
+<a href="#section-7">Conclusion: Speed Must Include the Cost of Harm</a>
+      </aside>
+
+      <article class="article">
+        <div class="intro-note">
+          <strong>Case focus:</strong> A hackathon prototype became a production
+          platform and exposed student data through broken authorization, leaked
+          credentials, insecure transport, and unsafe defaults.
+        </div>
+
+        <section class="article-section" id="section-1">
+      <h2>When a Prototype Becomes a Responsibility</h2>
+      <p>The students in this case believed they had built a successful hackathon prototype. In less than seventy-two hours, they produced a working mobile-and-web platform, won a prize, and attracted real users. The problem was not that they moved quickly or used an AI coding assistant. The problem was that the team allowed a demonstration system to become production software without changing the way they designed, tested, deployed, and governed it.
+
+Once the platform began storing full names, student numbers, phone numbers, payment-reference screenshots, uploaded identification photographs, and private group messages, it was no longer “just a school project.” It became a system holding information that could expose, embarrass, impersonate, or financially harm real students. At that point, speed was no longer the only measure of success. Confidentiality, integrity, availability, accountability, and respect for the people represented by the data had to become product requirements.
+
+The incident also shows why “nothing malicious happened yet” is not a valid security argument. Security is not proven by the absence of a known attack. The profile-number trick demonstrated that unauthorized access was already possible. The public credentials, broad database permissions, plain HTTP connection, and verbose error pages meant that several independent failures were waiting to be combined. A responsible response must therefore treat the exposure as a genuine incident, even before confirmed abuse is discovered.</p>
+    </section>
+<section class="article-section" id="section-2">
+      <h2>Where the Design Failed</h2>
+      <p>The most visible flaw was the ability to change <code>/profile/1048</code> to <code>/profile/1049</code> and receive another student’s record. This is an insecure direct object reference, also described as broken object-level authorization. The application treated possession of a record number as permission to view that record. It authenticated a user but failed to authorize each requested object. The violated principle was <strong>complete mediation</strong>: every access to every protected resource must be checked, not only the user’s initial login. It also violated <strong>fail-safe defaults</strong>, because the system granted access when no explicit permission had been proven.
+
+The broad database access assigned to every account violated the <strong>principle of least privilege</strong>. A normal organization member should not be able to read the entire database. A treasurer may need to confirm payments for one organization, while a membership officer may need to manage only that organization’s roster. Each role, service, and database account should receive only the minimum permissions needed for its function. Broad access turned one missing application check into exposure of hundreds of records.
+
+The database password and payment API key in a public GitHub commit violated <strong>separation of code and secrets</strong>, least privilege, and defense in depth. A repository should contain instructions for retrieving configuration, not the credentials themselves. Even deleting the visible line would not be enough because Git preserves earlier commits. The secret had to be treated as compromised, revoked, rotated, and removed from history.
+
+Verbose stack traces violated <strong>fail securely</strong> and <strong>minimize information exposure</strong>. An internal error should give the user a generic message and a reference number, while technical details go to protected logs. Revealing routes, file paths, database calls, and framework versions helps an attacker understand the system.
+
+Running the application over plain HTTP violated <strong>defense in depth</strong> and protection of data in transit. Even perfect access-control code would not protect credentials, session cookies, uploaded IDs, or private chats if network traffic could be intercepted. HTTPS should have been mandatory, with secure cookie settings and automatic redirection from HTTP.
+
+Finally, collecting and retaining screenshots and ID photographs without a clearly stated necessity violated <strong>data minimization</strong> and the privacy principle of proportionality. The safest sensitive record is one the system never collects. A payment may be verifiable through a transaction status or limited reference field rather than a permanent screenshot. Identity verification may be completed by an authorized officer without storing a reusable copy of an ID.</p>
+    </section>
+<section class="article-section" id="section-3">
+      <h2>The First Hours: Contain Before Rebuilding</h2>
+      <p>The first action should be to take the application offline or place it in a restricted maintenance mode. This is not an admission of failure; it is an application of <strong>fail-safe defaults</strong>. When the team cannot guarantee that access decisions are correct, the safe default is to deny access rather than continue exposing records.
+
+At the same time, the team should preserve relevant server, database, hosting, authentication, and payment-provider logs. They should document when the flaw was reported, what endpoints were affected, which data types were reachable, and who performed each response action. This restores <strong>accountability</strong> and supports an accurate incident assessment. Evidence should be protected from alteration, and access to it should be limited.
+
+Every exposed credential must then be revoked and replaced. The database password, payment API key, session-signing keys, deployment tokens, and any reused passwords should be rotated. Existing sessions should be invalidated. The database should temporarily accept connections only from the necessary application service or trusted administrative network. These actions restore <strong>least privilege</strong> and <strong>defense in depth</strong> by reducing the value of credentials that may already have been copied.
+
+The team must then determine the scope of unauthorized access. They should review logs for sequential profile requests, unusual exports, repeated authorization failures, suspicious IP addresses, and access to uploaded files or messages. A lack of useful logs should be recorded as a finding rather than interpreted as proof that no breach occurred.
+
+The faculty adviser, university privacy or information-security office, participating organizations, and the person accountable for privacy compliance should be informed immediately. The team should assess, with appropriate institutional guidance, whether the National Privacy Commission and affected data subjects must be notified. Under Republic Act No. 10173, notification is required in specified circumstances when sensitive personal information or information enabling identity fraud is reasonably believed to have been acquired by an unauthorized person and serious harm is likely. The principle restored here is <strong>accountability to data subjects</strong>: people should not be kept unaware of a risk that affects them.</p>
+    </section>
+<section class="article-section" id="section-4">
+      <h2>The First Days: Repair the Dangerous Paths</h2>
+      <p>Before restoring public service, the team must redesign authorization on the server. Every endpoint that receives a profile ID, file ID, chat ID, organization ID, or payment ID must verify both the authenticated identity and permission to access that exact object. A secure query should be scoped to the current organization and user role instead of fetching a record first and hoping the interface hides it. For example, the system should ask for “profile 1049 that belongs to an organization this user may administer,” not simply “profile 1049.” Automated tests must prove that members of Organization A cannot read, edit, or delete Organization B’s records. This restores <strong>complete mediation</strong>, least privilege, and secure defaults.
+
+Next, HTTPS must be enforced throughout the application. Session cookies should be marked Secure, HttpOnly, and given an appropriate SameSite policy. Sensitive responses should not be cached publicly. Uploaded files should be stored privately and delivered through short-lived, authorized links rather than predictable public URLs. This restores <strong>confidentiality in transit</strong> and adds defense in depth.
+
+Error handling must be changed so that users receive a neutral message such as “The request could not be completed,” while protected logs record the exception, request identifier, and necessary debugging details. Production debug mode must be disabled. This restores <strong>fail securely</strong> and reduces unnecessary information disclosure.
+
+The team should also inventory all collected data. Fields that are not necessary for a declared purpose should be removed. Old ID images and payment screenshots should be securely deleted when they are no longer needed, subject to legitimate retention requirements. Users should receive a clear privacy notice explaining what is collected, why it is needed, who can access it, how long it is kept, and how they may exercise their rights. These actions restore <strong>data minimization, transparency, purpose limitation, and proportionality</strong>.
+
+Finally, the repaired release should undergo peer review and focused security testing. Tests should cover broken object authorization, role escalation, unauthenticated access, file downloads, secret leakage, session handling, and error behavior. The goal is not merely to confirm that ordinary use works; it is to confirm that forbidden actions fail.</p>
+    </section>
+<section class="article-section" id="section-5">
+      <h2>Long-Term Design: Make Security the Normal Path</h2>
+      <p>A durable rebuild begins with a threat model. The team should list valuable assets, user roles, trust boundaries, entry points, likely misuse cases, and the harm caused by disclosure or alteration. This exercise would have revealed early that organization membership creates a multi-tenant system: data belonging to one organization must be isolated from every other organization. Security requirements should be written alongside functional requirements, not added after launch.
+
+The authorization model should use explicit roles such as member, organization officer, treasurer, adviser, and platform administrator. Permissions should be centrally defined and denied by default. Administrative actions should require stronger authentication and should be recorded in tamper-resistant audit logs. High-risk actions, such as bulk export or changing payment settings, may require re-authentication or approval by another authorized person. This applies <strong>least privilege, separation of duties, complete mediation, and accountability</strong>.
+
+Secrets should move to the hosting platform’s encrypted environment-variable or secret-management service. Separate credentials should be used for development, testing, and production, and each should have narrow permissions. Automated secret scanning should run before code is accepted, while repository protection rules should prevent direct unreviewed changes to the production branch.
+
+The team also needs a secure software development lifecycle. Every feature should include privacy and security acceptance criteria. Pull requests should receive human review. Automated pipelines should run unit tests, authorization tests, dependency checks, static analysis, and secret scanning. Production deployment should require successful tests and a controlled approval process. Backups should be encrypted, regularly tested for restoration, and limited by the same retention policy as the primary data. Monitoring should detect unusual exports, repeated denied requests, and sudden increases in access volume.
+
+Privacy governance must be part of the architecture. The university or organizations responsible for deciding why and how the data is processed should identify their roles under the Data Privacy Act, designate accountable personnel where required, maintain policies, and conduct an appropriate privacy impact and risk assessment. Collection should be limited to declared purposes. Retention periods should be defined rather than indefinite. Requests for access, correction, deletion, or blocking should have a workable process. Privacy must be visible in the user experience, not hidden in a legal document nobody reads.</p>
+    </section>
+<section class="article-section" id="section-6">
+      <h2>Using AI Without Outsourcing Responsibility</h2>
+      <p>The AI coding assistant accelerated development, but it did not accept responsibility for the consequences. Generated code is a proposal, not a security decision. An AI system can produce a convincing route, database model, or authentication example while omitting object-level authorization, safe logging, tenant isolation, or production configuration. It may optimize for “make the example run” because that is what the prompt rewards.
+
+Developers should therefore treat AI-generated code as untrusted third-party code. They must understand it, review it, test negative cases, compare it with current framework guidance, and reject patterns they cannot defend. Prompts should include security requirements, but prompting is not a substitute for verification. Sensitive production data and credentials should never be pasted into an assistant unless an approved arrangement and policy clearly allow it.
+
+The legal and ethical responsibility remains with the people and organizations processing the data. Republic Act No. 10173 requires adherence to transparency, legitimate purpose, and proportionality, and it requires reasonable and appropriate organizational, physical, and technical security measures. The law also emphasizes accountability for personal information under an organization’s control. Developers may not always be the legal personal information controller, but their design choices directly determine whether the controller can meet those duties. A developer who notices insecure access and stays silent is not merely leaving a technical bug; that developer is allowing an avoidable privacy risk to continue.</p>
+    </section>
+<section class="article-section" id="section-7">
+      <h2>Conclusion: Speed Must Include the Cost of Harm</h2>
+      <p>Shipping quickly is valuable when it helps a team learn, test an idea, and serve users sooner. But speed is not real progress when the system transfers hidden risk to people who never agreed to bear it. The team in this case optimized the visible path: registration worked, payments could be recorded, and profiles loaded. They did not test the forbidden paths: another person’s profile, another organization’s files, an expired session, a leaked secret, or an intercepted connection.
+
+The right balance is not “security instead of speed.” It is to make a smaller, safer version first. A hackathon prototype can use synthetic data, limited roles, no permanent ID storage, private deployment, and an expiration date. Production use should begin only after authorization, transport security, secret management, logging, retention, incident response, and privacy notices are ready.
+
+AI can reduce the time required to write code, but it cannot reduce the duty of care owed to the people behind the data. The strongest development teams do not measure speed only by how soon a feature appears. They also measure how safely it fails, how little information it collects, how clearly it explains its use of data, and how quickly it can detect and contain harm. A system respects its users when privacy is not a patch applied after exposure, but a constraint that shapes every design decision from the first line of code.</p>
+    </section>
+
+        <section class="references" id="references">
+          <h2>References</h2>
+          <ol>
+            <li>
+              National Privacy Commission. 
+              <a href="https://privacy.gov.ph/data-privacy-act/" target="_blank" rel="noopener">
+                Republic Act No. 10173 — Data Privacy Act of 2012
+              </a>.
+            </li>
+            <li>
+              National Privacy Commission.
+              <a href="https://privacy.gov.ph/implementing-rules-regulations-data-privacy-act-2012/" target="_blank" rel="noopener">
+                Implementing Rules and Regulations of the Data Privacy Act
+              </a>.
+            </li>
+            <li>
+              OWASP.
+              <a href="https://cheatsheetseries.owasp.org/cheatsheets/Secure_Product_Design_Cheat_Sheet.html" target="_blank" rel="noopener">
+                Secure Product Design Cheat Sheet
+              </a>.
+            </li>
+            <li>
+              OWASP.
+              <a href="https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/" target="_blank" rel="noopener">
+                Broken Object Level Authorization
+              </a>.
+            </li>
+            <li>
+              OWASP.
+              <a href="https://cheatsheetseries.owasp.org/cheatsheets/Insecure_Direct_Object_Reference_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">
+                Insecure Direct Object Reference Prevention
+              </a>.
+            </li>
+          </ol>
+        </section>
+      </article>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <p>Created for an academic technical-blog assignment.</p>
+      <a href="#">Back to top ↑</a>
+    </div>
+  </footer>
+</body>
+</html>
