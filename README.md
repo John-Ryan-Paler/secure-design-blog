@@ -1,36 +1,32 @@
-# Secure Design Blog — Two-Page Version
+# Secure Design Blog
 
-This website has two pages:
+A two-page website created for a technical blog assignment about Secure Design Principles, data privacy, artificial intelligence, and Republic Act No. 10173.
 
-1. `index.html` — the required technical blog
-2. `profile.html` — the optional author profile
+## Website Pages
 
-## Customize the profile
+1. `index.html` — the required technical blog post
+2. `profile.html` — the author profile page
 
-Open `profile.html` and replace:
-
-- `Your Name`
-- `YN` inside the profile circle
-- `Your Course and Year Level`
-- the interests and goal paragraphs, if desired
-
-Do not publish sensitive information such as your student number, home address,
-phone number, passwords, or identification documents.
-
-## Open the website
-
-Double-click `index.html`.
-
-Use the navigation bar to switch between the technical blog and the profile page.
-
-## Publish through GitHub and Vercel
-
-Upload these files to the same GitHub repository:
+## Project Files
 
 - `index.html`
 - `profile.html`
 - `style.css`
+- `john1.jpg`
 - `README.md`
 
-Then import the repository into Vercel. Submit the official link to `index.html`
-or the main `.vercel.app` domain because the technical blog is the homepage.
+## About the Project
+
+The technical blog discusses what went wrong with an insecure student organization platform. It explains the Secure Design Principles that were violated, the short-term containment steps needed during the first hours and days, and the long-term design changes required to prevent the same problems from happening again.
+
+The article also discusses responsible use of AI coding assistants and the developer’s obligations under Republic Act No. 10173.
+
+## Running the Website
+
+Open `index.html` in a web browser.
+
+Use the navigation bar to switch between the Technical Blog and My Profile pages.
+
+## Deployment
+
+The website is hosted using GitHub and Vercel. The main `.vercel.app` link opens the technical blog homepage.
