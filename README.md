@@ -12,7 +12,7 @@ A two-page website created for a technical blog assignment about Secure Design P
 - `index.html`
 - `profile.html`
 - `style.css`
-- `john1.jpg`
+- `miguel.jpg`
 - `README.md`
 
 ## About the Project
